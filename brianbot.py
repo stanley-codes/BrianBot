@@ -6,8 +6,9 @@ load_dotenv()
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 client = discord.Client()
 
-@client.event
-async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+class BrianClient(discord.Client):
+    async def on_ready(self):
+     print(f'{self.user} has connected to Discord!')
 
+client = BrianClient() 
 client.run(BOT_TOKEN)
