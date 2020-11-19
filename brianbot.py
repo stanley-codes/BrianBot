@@ -1,6 +1,6 @@
 import os
 import discord
-import ffmpeg
+import time
 from gtts import gTTS
 from ctypes.util import find_library
 from io import BytesIO
@@ -46,6 +46,12 @@ class BrianBot(discord.Client):
             pcm = discord.FFmpegPCMAudio(f'voice{count}.mp3')
             audio_files.append(pcm)
         return audio_files
+    
+    def cleanup(self, audio_files):
+        for i in range(len(audio_files)):
+            if os.path.exists(f'voice{i}.mp3'):
+                os.remove(f'voice{i}.mp3')
+        
             
     async def on_voice_state_update(self, member, before, after):
         voice_channel = after.channel
@@ -59,8 +65,10 @@ class BrianBot(discord.Client):
             print('Voice connected!')
             for file in audio_files:
                 voice_client.play(file)
+                time.sleep(20)
             if not voice_client.is_playing():
                 await voice_client.disconnect()
+                self.cleanup(audio_files)
 
         
 
