@@ -14,7 +14,6 @@ intents = discord.Intents(members = True, messages = True, guilds = True, presen
 class BrianBot(discord.Client):
     discord.opus.load_opus(find_library('opus'))
 
-
     async def on_ready(self):
         print(f'{self.user} is ready!')
 
@@ -51,12 +50,24 @@ class BrianBot(discord.Client):
         for i in range(len(audio_files)):
             if os.path.exists(f'voice{i}.mp3'):
                 os.remove(f'voice{i}.mp3')
+    
+    def get_vc(self, member):
+        guild = member.guild
+        voice_client = None
+        for vc in self.voice_clients:
+            print(vc)
+            if guild == vc.guild:
+                voice_client = vc
+        return voice_client
         
             
     async def on_voice_state_update(self, member, before, after):
         voice_channel = after.channel
-        if voice_channel is not None and member != self.user:
-            voice_client = await voice_channel.connect()
+        voice_client = self.get_vc(member)
+        if voice_channel and member != self.user and not voice_client:
+            await voice_channel.connect()
+            voice_client = self.get_vc(member)
+        if voice_channel:
             audio_files = self.create_audio_files(voice_channel.members)
             if not discord.opus.is_loaded():
                 print('Opus not loaded!')
@@ -68,6 +79,7 @@ class BrianBot(discord.Client):
                 time.sleep(20)
             if not voice_client.is_playing():
                 await voice_client.disconnect()
+                voice_client = None
                 self.cleanup(audio_files)
 
         
