@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+from discord import ChannelType
 import time
 from gtts import gTTS
 from ctypes.util import find_library
@@ -24,14 +25,6 @@ async def on_member_join(member):
     msg = f"Hi {name}! Welcome to {guild}! My name is Brian, I'm a bot here. If you need anything let me know by pinging !help"
     await member.guild.get_channel(706419344070148147).send(msg)
 
-@client.event    
-async def on_message(message):
-    channel = str(message.channel)
-    if message.content == '!help':
-        await message.channel.send('!help is currently not available')
-    if channel == "testing-bots" and message.author != client.user:
-        await message.channel.send('Hi my name is Brian!')
-
 def create_audio_files(members):
     audio_files = []
     count = 0
@@ -39,9 +32,8 @@ def create_audio_files(members):
         if member.bot:
             continue
         audio_file = BytesIO()
-        guild = str(member.guild)
-        name = member.display_name
-        msg = f'Hi {name}! Welcome to {guild}! My name\'s Brian. I am a bot here. If you need anything let me know.'
+        name_guild = get_name_guild(member)
+        msg = f'Hi {name_guild[0]}! Welcome to {name_guild[1].name}! My name\'s Brian. I am a bot here. If you need anything let me know.'
         tts = gTTS(msg, lang = 'en')
         tts.save(f'voice{count}.mp3')
         pcm = discord.FFmpegPCMAudio(f'voice{count}.mp3')
@@ -62,9 +54,45 @@ def get_vc(member):
             voice_client = vc
     return voice_client
 
+def get_name_guild(member):
+   return (member.display_name, member.guild) 
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    await client.process_commands(message)
+    channel = message.channel
+    if channel.type == ChannelType.private:
+        username = message.content.split()[0]
+        print(username)
+        await channel.send('Invite has been sent. Check your GitHub or your email to join the organization! :)')
+
+#keeps track of all twitch subs
+twitch_subs = []
+
+#sends dm to get the organization enrollment process started
 @client.command(name = 'invite')
-async def orginvite(self, ctx):
-    await ctx.send('hello Stanley')
+@commands.has_role('Owner')
+async def orginvite(ctx):
+    guild = ctx.guild
+    new_twitch_subs = [] 
+    for member in guild.members:
+        for role in member.roles:
+            if 'Owner' == role.name:
+                if member not in twitch_subs:
+                    new_twitch_subs.append(member)
+                    break
+    
+    for twitch_sub in new_twitch_subs:
+        await twitch_sub.create_dm()
+        name_guild = get_name_guild(twitch_sub)
+        msg = f'Hi {name_guild[0]}! I wanted to say thanks by inviting you to {name_guild[1].name}\'s GitHub organization where you can write code and be recognized on stream. What is your GitHub username?(Please respond with just the username)'
+        await twitch_sub.dm_channel.send(msg) 
+        #twitch_subs.append(twitch_sub)
+
+    await ctx.send('Invite process has been started.')
+
     
 @client.event
 async def on_voice_state_update(member, before, after):
