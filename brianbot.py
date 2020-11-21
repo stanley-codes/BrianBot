@@ -7,9 +7,12 @@ from gtts import gTTS
 from ctypes.util import find_library
 from io import BytesIO
 from dotenv import load_dotenv
+from github import Github
 
 load_dotenv()
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+github_client = Github(GITHUB_TOKEN)
 intents = discord.Intents(members = True, messages = True, guilds = True, presences = True, voice_states = True)
 discord.opus.load_opus(find_library('opus'))
 client = commands.Bot(intents = intents, command_prefix = '!')
@@ -65,7 +68,6 @@ async def on_message(message):
     channel = message.channel
     if channel.type == ChannelType.private:
         username = message.content.split()[0]
-        print(username)
         await channel.send('Invite has been sent. Check your GitHub or your email to join the organization! :)')
 
 #keeps track of all twitch subs
