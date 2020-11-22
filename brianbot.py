@@ -5,7 +5,6 @@ from discord import ChannelType
 import time
 from gtts import gTTS
 from ctypes.util import find_library
-from io import BytesIO
 from dotenv import load_dotenv
 from github import Github
 
@@ -34,7 +33,6 @@ def create_audio_files(members):
     for member in members:
         if member.bot:
             continue
-        audio_file = BytesIO()
         name_guild = get_name_guild(member)
         msg = f'Hi {name_guild[0]}! Welcome to {name_guild[1].name}! My name\'s Brian. I am a bot here. If you need anything let me know.'
         tts = gTTS(msg, lang = 'en')
@@ -84,7 +82,7 @@ async def orginvite(ctx):
     new_twitch_subs = [] 
     for member in guild.members:
         for role in member.roles:
-            if 'Owner' == role.name:
+            if 'Twitch Subscriber' == role.name:
                 if member not in twitch_subs:
                     new_twitch_subs.append(member)
                     break
@@ -94,8 +92,7 @@ async def orginvite(ctx):
         name_guild = get_name_guild(twitch_sub)
         msg = f'Hi {name_guild[0]}! I wanted to say thanks by inviting you to {name_guild[1].name}\'s GitHub organization where you can write code and be recognized on stream. What is your GitHub username?(Please respond with just the username)'
         await twitch_sub.dm_channel.send(msg) 
-        #twitch_subs.append(twitch_sub)
-
+        twitch_subs.append(twitch_sub)
     await ctx.send('Invite process has been started.')
 
     
