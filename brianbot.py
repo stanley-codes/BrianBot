@@ -68,6 +68,9 @@ async def on_message(message):
     channel = message.channel
     if channel.type == ChannelType.private:
         username = message.content.split()[0]
+        user = github_client.get_user(username)
+        organization = github_client.get_organization('stanley-codes')
+        organization.add_to_members(user)
         await channel.send('Invite has been sent. Check your GitHub or your email to join the organization! :)')
 
 #keeps track of all twitch subs
